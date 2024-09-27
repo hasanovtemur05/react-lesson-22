@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Button, Popconfirm, Space, Tooltip, Form } from "antd";
+import React, { useEffect, useState,navigate } from "react";
+import { Button, Popconfirm, Space, Tooltip, Form ,Input} from "antd";
 import { category } from "@service";
 import { GlobalTable } from "@components";
-import { useNavigate } from "react-router-dom";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Category } from "@modals";
+import { CategoryModal } from "@components";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState([]);
@@ -96,6 +96,16 @@ const Index = () => {
     setOpen(true);
   };
 
+  const handleChange = (event) => {
+    setParams((prev)=>({
+      ...prev,
+      search: event.target.value
+    }))
+    const search_params = new URLSearchParams(search)
+    search_params.set("search", event.target.value)
+    navigate(`?${search_params}`)
+  }
+
   const columns = [
     {
       title: "Name",
@@ -139,19 +149,22 @@ const Index = () => {
 
   return (
     <>
-    <Category
+    <CategoryModal
       open={open}
       handleClose={handleClose}
       handleSubmit={handleSubmit}
       editingCategory={editingCategory}
     />
+      <div className="flex justify-between items-center my-3">
+        <Input placeholder="search..." className="w-[300px]" onChange={handleChange} />
       <Button
         type="primary"
         onClick={handleCreate}
-        style={{ marginBottom: "10px" }}
+        
       >
         Create Category
       </Button>
+      </div>
       <GlobalTable
         columns={columns}
         data={data}

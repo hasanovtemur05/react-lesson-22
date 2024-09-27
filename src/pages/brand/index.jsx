@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Button, Popconfirm, Space, Tooltip, Form } from "antd";
+import { useEffect, useState, navigate } from "react";
+import { Button, Popconfirm, Space, Tooltip, Form, Input } from "antd";
 import { brand, category } from "@service";
 import { BrandModal, GlobalTable } from "@components";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +9,7 @@ const Index = () => {
   const [data, setData] = useState([]);
   const [editingBrand, setEditingBrand] = useState(null);
   const [categories, setCategories] = useState([]);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [form] = Form.useForm()
   const [total, setTotal] = useState()
   const [params, setParams] = useState({
@@ -91,6 +91,19 @@ const Index = () => {
     setOpen(true);
   };
 
+  const handleChange = (event) =>{
+    console.log(event.target.value);
+    
+    setParams((prev)=>({
+      ...prev,
+      search: event.target.value,
+    }))
+    const search_params = new URLSearchParams(search)
+    search_params.set("search", event.target.value)
+    
+    navigate(`?${search_params}`)
+  }
+
   const columns = [
     {
       title: "Name",
@@ -155,6 +168,8 @@ const Index = () => {
         editingBrand={editingBrand}
         categories={categories}
       />
+      <div>
+        <Input placeholder="search..." className="w-[300px]" onChange={handleChange} />
       <Button
         type="primary"
         onClick={handleCreate}
@@ -162,6 +177,7 @@ const Index = () => {
       >
         Create Brand
       </Button>
+      </div>
       <GlobalTable
         columns={columns}
         data={data}

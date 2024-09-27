@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Popconfirm, Space, Tooltip } from "antd";
+import { Button, Popconfirm, Space, Tooltip, Form } from "antd";
 import { brand, category } from "@service";
 import { BrandModal, GlobalTable } from "@components";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ const Index = () => {
   const [editingBrand, setEditingBrand] = useState(null);
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+  const [form] = Form.useForm()
   const [total, setTotal] = useState()
   const [params, setParams] = useState({
     search: "",
@@ -29,10 +30,10 @@ const Index = () => {
       limit: pageSize,
       page: current,
     }));
-    fetchBrands();
+    getData();
   };
 
-  const fetchBrands = async () => {
+  const getData = async () => {
     try {
       const res = await brand.get(params); 
       setData(res?.data?.data?.brands);
@@ -55,11 +56,13 @@ const Index = () => {
   };
 
   useEffect(() => {
-    fetchBrands();
+    getData();
     fetchCategories();
   }, []);
 
   const handleSubmit = async (brandData) => {
+    console.log(brandData);
+    
     try {
       console.log("Submitting brand data:", brandData);
       if (editingBrand) {
@@ -67,22 +70,17 @@ const Index = () => {
       } else {
         await brand.create(brandData);
       }
-      fetchBrands();
+      getData();
       handleClose();
     } catch (error) {
       console.log("Error submitting brand:", error);
     }
   };
 
-  const handleEdit = (item) => {
-    setEditingBrand(item);
-    setOpen(true);
-  };
-
   const handleDelete = async (id) => {
     try {
       await brand.delete(id);
-      fetchBrands();
+      getData();
     } catch (error) {
       console.log("Error deleting brand:", error);
     }
@@ -116,7 +114,10 @@ const Index = () => {
         <Space>
           <Tooltip>
             <Button
-              onClick={() => handleEdit(record)}
+              onClick={() => {
+                setEditingBrand(record);
+                setOpen(true)
+              }  }
               variant="solid"
               color="danger"
               style={{ marginRight: "8px", backgroundColor: "#ffcc55" }}
@@ -150,7 +151,7 @@ const Index = () => {
       <BrandModal
         open={open}
         handleClose={handleClose}
-        handleSubmit={handleSubmit}
+        getData={getData}
         editingBrand={editingBrand}
         categories={categories}
       />

@@ -8,12 +8,13 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Select from "@mui/material/Select"; 
 import MenuItem from "@mui/material/MenuItem"; 
+import { brand } from '@service';
 
 const brandValidationSchema = Yup.object().shape({
   name: Yup.string().required("Brand Name is required"),
   description: Yup.string().required("Description is required"),
   category_id: Yup.number().required("Category ID is required").typeError("Category ID must be a number"),
-  file: Yup.mixed().required("File is required"),
+  file: Yup.mixed(),
 });
 
 const style = {
@@ -28,7 +29,7 @@ const style = {
   p: 4,
 };
 
-export default function BrandModal({ open, handleClose, handleSubmit, editingBrand, categories }) {
+export default function BrandModal({ open, handleClose,  editingBrand, categories, getData }) {
   const [initialValues, setInitialValues] = useState({
     name: "",
     description: "",
@@ -49,22 +50,29 @@ export default function BrandModal({ open, handleClose, handleSubmit, editingBra
     }
   }, [open, editingBrand]);
 
-  const onSubmit = async (values, { setSubmitting }) => {
+  const onSubmit = async (values, ) => {
+
+
     try {
       const formData = new FormData();
-      formData.append("name", values.name);
-      formData.append("description", values.description);
-      formData.append("category_id", values.category_id);
-      formData.append("file", values.file);
-
-      await handleSubmit(formData);
+        formData.append("name", values.name);
+        formData.append("description", values.description);
+        formData.append("category_id", values.category_id);
+        formData.append("file", values.file);
+      if (editingBrand) {
+        await brand.update(editingBrand.id, formData);
+      } else {
+        await brand.create(formData);
+        handleClose();
+      }
+      getData();
       handleClose();
     } catch (error) {
-      console.log("Error in submission:", error);
-    } finally {
-      setSubmitting(false);
+      console.log("Error submitting brand:", error);
     }
   };
+
+  
 
   return (
     <Modal open={open} onClose={handleClose}>

@@ -14,11 +14,11 @@ import {
         <Route path="/" element={<App />}>
           <Route index element={<SignIn />} />
           <Route path="sign-up" element={<SignUp />} />
-          {/* Admin */}
+
           <Route path="admin-layout" element={<AdminLayout />}>
             <Route index element={<Category />} />
             <Route path="brand" element={<Brand />} />
-            <Route path="sub-category" element={<SubCategory/>} />
+            <Route path="sub-category/:categoryId" element={<SubCategory/>} />
           </Route>
         </Route>
       )

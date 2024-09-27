@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Popconfirm, Space, Tooltip } from "antd";
+import { Button, Popconfirm, Space, Tooltip, Form } from "antd";
 import { category } from "@service";
 import { GlobalTable } from "@components";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ const Index = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState([]);
   const [total, setTotal] = useState()
+  const [form] = Form.useForm()
   const [editingCategory, setEditingCategory] = useState([]);
   const [params, setParams] = useState({
     search: "",
@@ -63,7 +64,20 @@ const Index = () => {
     }
   };
 
-  const editItem = (item) => {
+  const editItem = async (item) => {
+    try {
+      if (editingCategory) {
+        await category.update(editingCategory.id, item)
+      }else{
+        await category.create(item)
+      }
+      getData()
+      setOpen(false)
+      form.resetFields()
+      
+    } catch (error) {
+      console.log('error');
+    }
     setEditingCategory(item);
     setOpen(true);
   };

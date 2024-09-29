@@ -1,29 +1,18 @@
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import { Modal, Typography, Input, Button, Form, message } from "antd";
 import { useState, useEffect } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
 const categoryValidationSchema = Yup.object().shape({
-  name: Yup.string().required("Category Name is required")
+  name: Yup.string().required("Category Name is required"),
 });
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
-export default function CategoryModal({ open, handleClose, handleSubmit, editingCategory }) {
+export default function CategoryModal({
+  open,
+  handleClose,
+  handleSubmit,
+  editingCategory,
+}) {
   const [initialValues, setInitialValues] = useState({ name: "" });
 
   useEffect(() => {
@@ -38,42 +27,57 @@ export default function CategoryModal({ open, handleClose, handleSubmit, editing
     try {
       await handleSubmit(values);
       handleClose();
+      message.success("Category saved successfully!");
     } catch (error) {
       console.log("Error in submission:", error);
+      message.error("Error saving category");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box sx={style}>
-        <Typography align="center" variant="h6">
-          {editingCategory?.id ? "Edit Category" : "Add Category"}
-        </Typography>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={categoryValidationSchema}
-          onSubmit={onSubmit}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <Field
+    <Modal
+      title={editingCategory?.id ? "Edit Category" : "Add Category"}
+      open={open}
+      onCancel={handleClose}
+      footer={null}
+    >
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={categoryValidationSchema}
+        onSubmit={onSubmit}
+      >
+        {({ values, handleChange, handleSubmit, isSubmitting }) => (
+          <Form layout="vertical" onFinish={handleSubmit}>
+            <Form.Item label="Category Name">
+              <Input
                 name="name"
-                as={TextField}
-                fullWidth
-                label="Category Name"
-                helperText={<ErrorMessage name="name" component="div" className="text-red-600 text-[15px]" />}
-                sx={{ marginY: "15px" }}
+                value={values.name}
+                onChange={handleChange}
+                placeholder="Enter category name"
               />
-              <Button variant="contained" color="success" type="submit" disabled={isSubmitting} fullWidth>
+              <ErrorMessage
+                name="name"
+                component="div"
+                style={{ color: "red", fontSize: "13px" }}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isSubmitting}
+                block
+              >
                 {editingCategory?.id ? "Update" : "Save"}
               </Button>
-            </Form>
-          )}
-        </Formik>
-      </Box>
+            </Form.Item>
+          </Form>
+        )}
+      </Formik>
     </Modal>
   );
 }

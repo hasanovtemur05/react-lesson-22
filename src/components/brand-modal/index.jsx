@@ -1,14 +1,10 @@
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import { useState, useEffect } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import Select from "@mui/material/Select"; 
-import MenuItem from "@mui/material/MenuItem"; 
+import React, { useState, useEffect } from 'react';
+import { Button, Modal, Form, Input, Select, Upload, message } from 'antd';
+import { Formik, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 import { brand } from '@service';
+
+const { Option } = Select;
 
 const brandValidationSchema = Yup.object().shape({
   name: Yup.string().required("Brand Name is required"),
@@ -17,19 +13,7 @@ const brandValidationSchema = Yup.object().shape({
   file: Yup.mixed(),
 });
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
-export default function BrandModal({ open, handleClose,  editingBrand, categories, getData }) {
+const BrandModal = ({ open, handleClose, editingBrand, categories, getData }) => {
   const [initialValues, setInitialValues] = useState({
     name: "",
     description: "",
@@ -50,99 +34,104 @@ export default function BrandModal({ open, handleClose,  editingBrand, categorie
     }
   }, [open, editingBrand]);
 
-  const onSubmit = async (values, ) => {
-
-
+  const onSubmit = async (values) => {
+    console.log("Form values:", values); 
     try {
       const formData = new FormData();
-        formData.append("name", values.name);
-        formData.append("description", values.description);
-        formData.append("category_id", values.category_id);
-        formData.append("file", values.file);
+      formData.append("name", values.name);
+      formData.append("description", values.description);
+      formData.append("category_id", values.category_id);
+      formData.append("file", values.file);
+
       if (editingBrand) {
         await brand.update(editingBrand.id, formData);
       } else {
         await brand.create(formData);
-        handleClose();
       }
       getData();
       handleClose();
+      message.success("Brand saved successfully!"); 
     } catch (error) {
-      console.log("Error submitting brand:", error);
+      console.error("Error submitting brand:", error); 
+      message.error("Error submitting brand");
     }
   };
 
-  
-
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box sx={style}>
-        <Typography align="center" variant="h6">
-          {editingBrand?.id ? "Edit Brand" : "Add Brand"}
-        </Typography>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={brandValidationSchema}
-          onSubmit={onSubmit}
-        >
-          {({ isSubmitting, setFieldValue }) => (
-            <Form>
-              <Field
+    <Modal
+      title={editingBrand?.id ? "Edit Brand" : "Add Brand"}
+      visible={open}
+      onCancel={handleClose}
+      footer={null}
+    >
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={brandValidationSchema}
+        onSubmit={onSubmit}
+      >
+        {({ values, isSubmitting, setFieldValue, handleChange, handleSubmit }) => (
+          <Form layout="vertical" onFinish={handleSubmit}>
+            <Form.Item label="Brand Name">
+              <Input
                 name="name"
-                as={TextField}
-                fullWidth
-                label="Brand Name"
-                helperText={<ErrorMessage name="name" component="div" style={{ color: 'red', fontSize: '15px' }} />}
-                sx={{ marginY: "15px" }}
+                value={values.name}
+                onChange={handleChange}
               />
-              <Field
+              <ErrorMessage name="name" component="div" style={{ color: 'red' }} />
+            </Form.Item>
+
+            <Form.Item label="Description">
+              <Input.TextArea
                 name="description"
-                as={TextField}
-                fullWidth
-                label="Description"
-                multiline
-                rows={4}
-                helperText={<ErrorMessage name="description" component="div" style={{ color: 'red', fontSize: '15px' }} />}
-                sx={{ marginY: "15px" }}
+                rows={2}
+                value={values.description}
+                onChange={handleChange}
+                style={{resize:"none"}}
               />
-              <Field name="category_id">
-                {({ field }) => (
-                  <Select
-                    {...field}
-                    fullWidth
-                    displayEmpty
-                    inputProps={{ "aria-label": "Without label" }}
-                    onChange={(event) => setFieldValue("category_id", event.target.value)}
-                    sx={{ marginY: "15px" }}
-                  >
-                    <MenuItem value="" disabled>
-                      Select Category
-                    </MenuItem>
-                    {categories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              </Field>
-              <ErrorMessage name="category_id" component="div" style={{ color: 'red', fontSize: '15px' }} />
-              <input
-                name="file"
-                type="file"
-                onChange={(event) => {
-                  setFieldValue("file", event.currentTarget.files[0]);
+              <ErrorMessage name="description" component="div" style={{ color: 'red' }} />
+            </Form.Item>
+
+            <Form.Item label="Category">
+              <Select
+                name="category_id"
+                value={values.category_id}
+                onChange={(value) => setFieldValue("category_id", value)}
+                placeholder="Select Category"
+              >
+                {categories.map((category) => (
+                  <Option key={category.id} value={category.id}>
+                    {category.name}
+                  </Option>
+                ))}
+              </Select>
+              <ErrorMessage name="category_id" component="div" style={{ color: 'red' }} />
+            </Form.Item>
+
+            <Form.Item label="Upload File">
+              <Upload
+                beforeUpload={(file) => {
+                  setFieldValue("file", file);
+                  return false; 
                 }}
-                style={{ marginBottom: "15px" }}
-              />
-              <Button variant="contained" color="success" type="submit" disabled={isSubmitting} fullWidth>
+                showUploadList={false}
+              >
+                <Button>Click to Upload</Button>
+              </Upload>
+              {values.file && <span>{values.file.name}</span>}
+              <ErrorMessage name="file" component="div" style={{ color: 'red' }} />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 {editingBrand?.id ? "Update" : "Create"}
               </Button>
-            </Form>
-          )}
-        </Formik>
-      </Box>
+            </Form.Item>
+          </Form>
+        )}
+      </Formik>
     </Modal>
   );
-}
+};
+
+export default BrandModal;

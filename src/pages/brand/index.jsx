@@ -2,14 +2,12 @@ import { useEffect, useState, navigate } from "react";
 import { Button, Popconfirm, Space, Tooltip, Form, Input } from "antd";
 import { brand, category } from "@service";
 import { BrandModal, GlobalTable } from "@components";
-import { useNavigate } from "react-router-dom";
 import { DeleteOutlined, EditOutlined} from "@ant-design/icons";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState([]);
   const [editingBrand, setEditingBrand] = useState(null);
   const [categories, setCategories] = useState([]);
-  // const navigate = useNavigate();
   const [form] = Form.useForm()
   const [total, setTotal] = useState()
   const [params, setParams] = useState({
@@ -139,10 +137,10 @@ const Index = () => {
           </Tooltip>
 
           <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
-            okText="Yes"
-            cancelText="No"
+            title="Delete"
+            description="O'chirmoqchimisiz"
+            okText="ha"
+            cancelText="yoq"
             onConfirm={() => handleDelete(record.id)}
           >
             <Tooltip>
